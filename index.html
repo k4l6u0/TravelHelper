@@ -1,1942 +1,900 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="text-[18px]">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="version" content="v4.2.0">
-<title>Jeju Helper</title>
-<style>
-  :root {
-    --bg: #0f172a;
-    --card-bg: #1e293b;
-    --card-border: #334155;
-    --accent: #38bdf8;
-    --accent-hover: #0284c7;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --highlight: #f59e0b;
-    --success: #10b981;
-    --danger: #ef4444;
-    --gemini-purple: #a855f7;
-    --tag-bg: #334155;
-  }
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-  }
-  body {
-    background-color: var(--bg);
-    color: var(--text-main);
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-    font-size: 15px;
-    line-height: 1.5;
-    touch-action: pan-y;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>福岡紅葉全自駕 2026</title>
   
-  /* Pull to Refresh Indicator */
-  #ptr-indicator {
-    position: fixed;
-    top: env(safe-area-inset-top, 0px);
-    left: 0;
-    right: 0;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: rgba(15, 23, 42, 0.95);
-    color: var(--accent);
-    font-size: 13px;
-    font-weight: 700;
-    transform: translateY(-100%);
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
-    z-index: 999;
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--card-border);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  }
-  #ptr-indicator.visible {
-    transform: translateY(0);
-  }
-  .ptr-spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2.5px solid rgba(56, 189, 248, 0.3);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: ptr-spin 0.8s linear infinite;
-  }
-  @keyframes ptr-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  header {
-    background: #1e293b;
-    border-bottom: 1px solid var(--card-border);
-    padding-top: calc(12px + env(safe-area-inset-top, 0px));
-    padding-left: calc(16px + env(safe-area-inset-left, 0px));
-    padding-right: calc(16px + env(safe-area-inset-right, 0px));
-    padding-bottom: 10px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .brand-logo {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 17px;
-    font-weight: 800;
-    color: #f8fafc;
-    letter-spacing: -0.3px;
-  }
-  .brand-logo .logo-icon {
-    font-size: 20px;
-    line-height: 1;
-  }
-  .brand-logo span.highlight {
-    color: var(--accent);
-  }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .pwa-refresh-icon {
-    background: #334155;
-    border: 1px solid #475569;
-    color: #94a3b8;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .pwa-refresh-icon:active {
-    background: var(--accent);
-    color: #0f172a;
-    transform: scale(0.9);
-  }
-  .version-tag {
-    background: #334155;
-    color: #94a3b8;
-    border: 1px solid #475569;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    font-family: monospace;
-  }
-
-  /* Centered 1.5x Live Compass Utility Bar */
-  .utility-bar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #0f172a;
-    border: 1.5px solid #334155;
-    border-radius: 10px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    position: relative;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .utility-bar.active {
-    border-color: #38bdf8;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
-  }
-  .compass-center-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-  }
-  .compass-arrow-wrap {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #1e293b;
-    border-radius: 50%;
-    border: 1.5px solid #475569;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-    flex-shrink: 0;
-  }
-  .compass-needle {
-    font-size: 18px;
-    line-height: 1;
-    display: inline-block;
-    transition: transform 0.1s linear;
-    color: #ef4444;
-  }
-  .compass-text-group {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .compass-text {
-    font-size: 15px;
-    font-weight: 700;
-    color: #f8fafc;
-    line-height: 1.2;
-  }
-  .compass-subtext {
-    font-size: 11px;
-    color: #94a3b8;
-    margin-top: 2px;
-  }
-  .compass-stop-badge {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(239, 68, 68, 0.2);
-    color: #fca5a5;
-    border: 1px solid #ef4444;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    display: none;
-  }
-  .compass-stop-badge.visible {
-    display: block;
-  }
-
-  /* Weather-rich Date Selector */
-  .date-selector {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: none;
-  }
-  .date-selector::-webkit-scrollbar { display: none; }
-  .day-btn {
-    flex: 1 0 calc(20% - 5px);
-    min-width: 68px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text-muted);
-    padding: 6px 4px;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-  .day-btn.active {
-    background: var(--accent);
-    color: #0f172a;
-    border-color: var(--accent);
-    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
-  }
-  .day-btn .day-title {
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .day-btn .day-date {
-    font-size: 10px;
-    font-weight: 500;
-    opacity: 0.85;
-  }
-  .day-btn .day-weather-sub {
-    font-size: 10px;
-    font-weight: 600;
-    margin-top: 1px;
-    line-height: 1.2;
-    white-space: nowrap;
-  }
-  .day-btn.active .day-weather-sub {
-    color: #042f2e;
-    font-weight: 700;
-  }
-  .day-btn:not(.active) .day-weather-sub {
-    color: #38bdf8;
-  }
-
-  main {
-    padding: 16px;
-    max-width: 680px;
-    margin: 0 auto;
-  }
+  <!-- PWA Standalone 全螢幕設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="福岡自駕">
+  <meta name="theme-color" content="#991b1b">
   
-  /* Weather Bar for Current Day */
-  .weather-banner {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid var(--card-border);
-    border-left: 4px solid #38bdf8;
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-  .weather-main {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .weather-icon {
-    font-size: 26px;
-    line-height: 1;
-  }
-  .weather-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #f8fafc;
-  }
-  .weather-desc {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-top: 2px;
-  }
-  .weather-temp {
-    text-align: right;
-  }
-  .weather-temp-val {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-  .weather-rain {
-    font-size: 11px;
-    color: #38bdf8;
-  }
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍁</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23991b1b'/><text x='50%' y='55%' font-size='60' dominant-baseline='middle' text-anchor='middle'>🍁</text></svg>">
 
-  /* Currency Converter Card */
-  .currency-card {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1.5px solid #334155;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-  }
-  .currency-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: #94a3b8;
-    margin-bottom: 10px;
-  }
-  .currency-header span.title {
-    color: #f8fafc;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .currency-rate-badge {
-    background: #334155;
-    color: var(--accent);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-family: monospace;
-  }
-  .currency-input-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .currency-input-wrap {
-    flex: 1.2;
-    position: relative;
-  }
-  .currency-input-wrap input {
-    width: 100%;
-    background: #0f172a;
-    border: 1px solid #475569;
-    border-radius: 8px;
-    padding: 8px 10px 8px 28px;
-    color: #f8fafc;
-    font-size: 16px;
-    font-weight: 700;
-    outline: none;
-    font-variant-numeric: tabular-nums;
-  }
-  .currency-input-wrap input:focus {
-    border-color: var(--accent);
-  }
-  .currency-symbol {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-    font-weight: 700;
-    font-size: 14px;
-  }
-  .currency-equal {
-    color: #94a3b8;
-    font-size: 16px;
-    font-weight: 700;
-  }
-  .currency-result-wrap {
-    flex: 1.2;
-    background: #0f172a;
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 8px;
-    padding: 8px 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .currency-result-val {
-    color: var(--accent);
-    font-size: 16px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
-  .currency-result-unit {
-    color: #94a3b8;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .currency-presets {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .currency-presets::-webkit-scrollbar { display: none; }
-  .preset-btn {
-    flex: 0 0 auto;
-    background: #334155;
-    border: 1px solid #475569;
-    color: #e2e8f0;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .preset-btn:active {
-    background: var(--accent);
-    color: #0f172a;
-  }
+  <!-- Manifest 動態生成 -->
+  <script>
+    const manifest = {
+      name: "福岡紅葉全自駕 2026",
+      short_name: "福岡自駕",
+      start_url: ".",
+      display: "standalone",
+      background_color: "#0f172a",
+      theme_color: "#991b1b",
+      icons: [{
+        src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23991b1b'/><text x='50%' y='55%' font-size='60' dominant-baseline='middle' text-anchor='middle'>🍁</text></svg>",
+        sizes: "192x192 512x512",
+        type: "image/svg+xml"
+      }]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = manifestURL;
+    document.head.appendChild(link);
+  </script>
 
-  /* HUD Next Station Dashboard Card */
-  .hud-banner {
-    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-    border: 1.5px solid #3b82f6;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25);
-  }
-  .hud-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #93c5fd;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-    border-bottom: 1px solid rgba(147, 197, 253, 0.2);
-    padding-bottom: 4px;
-  }
-  .hud-route {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-bottom: 8px;
-  }
-  .hud-now-line {
-    font-size: 13px;
-    color: #cbd5e1;
-  }
-  .hud-now-line strong {
-    color: #f8fafc;
-  }
-  .hud-next-line {
-    font-size: 15px;
-    font-weight: 800;
-    color: #38bdf8;
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-  .hud-next-line .badge {
-    background: #0284c7;
-    color: #fff;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 700;
-  }
-  
-  /* Telemetry metrics bar */
-  .hud-metrics {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 8px;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: 8px;
-    padding: 6px 10px;
-    margin-bottom: 10px;
-  }
-  .hud-metric-item {
-    display: flex;
-    flex-direction: column;
-  }
-  .hud-metric-label {
-    font-size: 10px;
-    color: #94a3b8;
-    font-weight: 600;
-  }
-  .hud-metric-val {
-    font-size: 13px;
-    font-weight: 800;
-    color: #f8fafc;
-    font-variant-numeric: tabular-nums;
-  }
-  .hud-metric-val.live {
-    color: #10b981;
-  }
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  /* HUD Quick Actions */
-  .hud-actions {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-  }
-  .hud-nav-btn {
-    border: none;
-    border-radius: 6px;
-    padding: 7px 2px;
-    font-size: 11px;
-    font-weight: 700;
-    text-align: center;
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    cursor: pointer;
-    transition: transform 0.1s ease;
-  }
-  .hud-nav-btn:active {
-    transform: scale(0.96);
-  }
-  .hud-nav-btn.kakao { background: #fee500; color: #191919; }
-  .hud-nav-btn.naver { background: #03c75a; color: #fff; }
-  .hud-nav-btn.google { background: #ea4335; color: #fff; }
-  .hud-nav-btn.waze { background: #33ccff; color: #0f172a; }
+  <style>
+    /* Safari 關鍵樣式保證與字級規範 (18px ~ 22px) */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      font-size: 18px;
+      line-height: 1.6;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: 120px; /* 保證底部內容絕不被頁籤遮擋 */
+    }
+    .hidden {
+      display: none !important;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Timeline list */
-  .itinerary-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    position: relative;
-  }
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 16px;
-    position: relative;
-    transition: transform 0.15s ease, border-color 0.15s ease;
-  }
-  .card.now-card {
-    border-color: var(--highlight);
-    box-shadow: 0 0 0 1px var(--highlight), 0 4px 20px rgba(245, 158, 11, 0.15);
-  }
-  .card.now-card::before {
-    content: "📍 預計此時抵達/進行中";
-    position: absolute;
-    top: -10px;
-    left: 14px;
-    background: var(--highlight);
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-  
-  /* Compact Integrated Time & OSRM Routing Header */
-  .card-header {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 8px;
-  }
-  .card-meta-line {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .card-time {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--accent);
-    background: rgba(56, 189, 248, 0.12);
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid rgba(56, 189, 248, 0.2);
-  }
-  .card-transit-inline {
-    font-size: 11px;
-    font-weight: 600;
-    color: #94a3b8;
-    background: #0f172a;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid #334155;
-  }
-  .card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-top: 2px;
-  }
-
-  /* Location Info Grid */
-  .info-grid {
-    background: #0f172a;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin: 8px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 13px;
-    border: 1px solid #1e293b;
-  }
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .info-label {
-    color: var(--text-muted);
-    font-size: 11px;
-    min-width: 54px;
-  }
-  .info-val {
-    flex: 1;
-    font-weight: 600;
-    color: #e2e8f0;
-    word-break: break-all;
-    user-select: all;
-  }
-  .copy-btn {
-    background: var(--tag-bg);
-    border: none;
-    color: var(--accent);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .copy-btn:active {
-    background: var(--accent);
-    color: #0f172a;
-  }
-  .note-box {
-    font-size: 12px;
-    color: #cbd5e1;
-    background: rgba(51, 65, 85, 0.4);
-    padding: 8px 10px;
-    border-radius: 6px;
-    border-left: 3px solid var(--accent);
-    margin-top: 8px;
-    line-height: 1.4;
-  }
-
-  /* Action Buttons (4 Navigation Apps) */
-  .card-actions {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-    margin-top: 10px;
-  }
-  .nav-btn {
-    border: none;
-    border-radius: 6px;
-    padding: 8px 3px;
-    font-size: 11px;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .nav-btn:active { opacity: 0.8; }
-  .nav-btn.kakao { background: #fee500; color: #191919; }
-  .nav-btn.naver { background: #03c75a; color: #fff; }
-  .nav-btn.google { background: #ea4335; color: #fff; }
-  .nav-btn.waze { background: #33ccff; color: #0f172a; }
-
-  /* Full-width Gemini AI Guide button */
-  .gemini-action-box {
-    margin-top: 6px;
-  }
-  .gemini-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-    border: 1px solid #a855f7;
-    color: #fff;
-    border-radius: 6px;
-    padding: 8px 10px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
-    transition: transform 0.1s ease, filter 0.1s ease;
-  }
-  .gemini-btn:active {
-    transform: scale(0.98);
-    filter: brightness(1.1);
-  }
-
-  /* Bottom Tips & Footer */
-  .tips-box {
-    margin-top: 24px;
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px dashed var(--card-border);
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .tips-box strong { color: #f8fafc; }
-  .footer-meta {
-    margin-top: 16px;
-    text-align: center;
-    font-size: 11px;
-    color: #64748b;
-    font-family: monospace;
-  }
-
-  /* Toast Notification */
-  #toast {
-    position: fixed;
-    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--success);
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 1000;
-    pointer-events: none;
-    max-width: 90%;
-    text-align: center;
-    line-height: 1.4;
-  }
-  #toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
-</style>
+    /* 確保底部導航在 Safari 永遠釘在底部 */
+    #bottom-nav {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 9999 !important;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    }
+  </style>
 </head>
-<body>
 
-<!-- Pull to Refresh Floating Bar -->
-<div id="ptr-indicator">
-  <span class="ptr-spinner" id="ptr-spinner" style="display:none;"></span>
-  <span id="ptr-text">👇 下拉以重新定位行程</span>
-</div>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased transition-colors duration-200">
 
-<header>
-  <div class="header-top">
-    <div class="brand-logo">
-      <span class="logo-icon">🍊</span>
-      <span>Jeju <span class="highlight">Helper</span></span>
-    </div>
-    <div class="header-right">
-      <div class="pwa-refresh-icon" onclick="autoRelocate()" title="重新定位目前時間行程">🔄</div>
-      <span class="version-tag" id="ver-badge">v4.2.0</span>
-    </div>
+  <!-- 全域更新 Toast 提示 -->
+  <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white dark:bg-amber-400 dark:text-slate-950 px-4 py-2 rounded-full text-[18px] font-bold shadow-xl border border-white/20 transition-all duration-300 opacity-0 pointer-events-none flex items-center space-x-2">
+    <i id="toast-icon" class="fas fa-rotate fa-spin"></i>
+    <span id="toast-msg">更新中...</span>
   </div>
 
-  <!-- Centered 1.5x Live Compass Utility Bar -->
-  <div class="utility-bar" id="compass-utility-bar" onclick="handleCompassClick(event)">
-    <div class="compass-center-content">
-      <div class="compass-arrow-wrap">
-        <span class="compass-needle" id="compass-needle">▲</span>
-      </div>
-      <div class="compass-text-group">
-        <span class="compass-text" id="compass-text">🧭 坐向：尚未啟動</span>
-        <span class="compass-subtext" id="compass-subtext">點擊啟動即時指南針</span>
-      </div>
-    </div>
-    <button class="compass-stop-badge" id="compass-stop-btn" onclick="stopCompass(event)">⏹️ 停止</button>
-  </div>
-
-  <!-- Date tabs -->
-  <div class="date-selector" id="day-tabs">
-    <button class="day-btn" id="tab-btn-1" onclick="selectDay(1)">
-      <span class="day-title">Day 1</span>
-      <span class="day-date">8/17 (一)</span>
-      <span class="day-weather-sub" id="tab-w-1">🌤️ 31° / 20%</span>
-    </button>
-    <button class="day-btn" id="tab-btn-2" onclick="selectDay(2)">
-      <span class="day-title">Day 2</span>
-      <span class="day-date">8/18 (二)</span>
-      <span class="day-weather-sub" id="tab-w-2">☀️ 32° / 10%</span>
-    </button>
-    <button class="day-btn" id="tab-btn-3" onclick="selectDay(3)">
-      <span class="day-title">Day 3</span>
-      <span class="day-date">8/19 (三)</span>
-      <span class="day-weather-sub" id="tab-w-3">⛅ 30° / 20%</span>
-    </button>
-    <button class="day-btn" id="tab-btn-4" onclick="selectDay(4)">
-      <span class="day-title">Day 4</span>
-      <span class="day-date">8/20 (四)</span>
-      <span class="day-weather-sub" id="tab-w-4">☀️ 31° / 10%</span>
-    </button>
-    <button class="day-btn" id="tab-btn-5" onclick="selectDay(5)">
-      <span class="day-title">Day 5</span>
-      <span class="day-date">8/21 (五)</span>
-      <span class="day-weather-sub" id="tab-w-5">🌤️ 30° / 10%</span>
-    </button>
-  </div>
-</header>
-
-<main>
-  <!-- Weather Bar -->
-  <div class="weather-banner" id="weather-banner">
-    <div class="weather-main">
-      <div class="weather-icon" id="weather-icon">🌤️</div>
-      <div>
-        <div class="weather-title" id="weather-title">濟州西部/西歸浦 天氣</div>
-        <div class="weather-desc" id="weather-desc">晴時多雲，午後局部短暫陣雨</div>
-      </div>
-    </div>
-    <div class="weather-temp">
-      <div class="weather-temp-val" id="weather-temp">26°C ~ 31°C</div>
-      <div class="weather-rain" id="weather-rain">💧 降雨機率 20%</div>
-    </div>
-  </div>
-
-  <!-- Currency Converter Card (KRW -> TWD) -->
-  <div class="currency-card">
-    <div class="currency-header">
-      <span class="title">💱 韓元即時換算 (KRW ➔ TWD)</span>
-      <span class="currency-rate-badge" id="rate-badge">匯率: 0.024</span>
-    </div>
-    <div class="currency-input-row">
-      <div class="currency-input-wrap">
-        <span class="currency-symbol">₩</span>
-        <input type="number" id="krw-input" value="50000" step="1000" min="0" oninput="calculateTWD()">
-      </div>
-      <span class="currency-equal">≈</span>
-      <div class="currency-result-wrap">
-        <span class="currency-result-val" id="twd-result">NT$ 1,200</span>
-        <span class="currency-result-unit">TWD</span>
-      </div>
-    </div>
-    <div class="currency-presets">
-      <button class="preset-btn" onclick="setPresetKRW(5000)">₩5,000</button>
-      <button class="preset-btn" onclick="setPresetKRW(15000)">₩15,000</button>
-      <button class="preset-btn" onclick="setPresetKRW(50000)">₩50,000</button>
-      <button class="preset-btn" onclick="setPresetKRW(100000)">₩100,000</button>
-      <button class="preset-btn" onclick="setPresetKRW(300000)">₩300,000</button>
-    </div>
-  </div>
-
-  <!-- HUD Next Station Dashboard Card -->
-  <div class="hud-banner" id="hud-banner">
-    <div class="hud-header">
-      <span id="hud-mode-title">🚀 即時自駕儀表盤</span>
-      <span id="hud-time-tag">計算中</span>
-    </div>
-    <div class="hud-route">
-      <div class="hud-now-line" id="hud-now-text">📍 目前規劃：-</div>
-      <div class="hud-next-line">
-        <span class="badge">NEXT</span>
-        <span id="hud-next-text">正在計算下一站...</span>
-      </div>
-    </div>
-    <div class="hud-metrics">
-      <div class="hud-metric-item">
-        <span class="hud-metric-label">🚗 公路行車 (OSRM / GPS)</span>
-        <span class="hud-metric-val" id="hud-dist-val">計算中...</span>
-      </div>
-      <div class="hud-metric-item">
-        <span class="hud-metric-label">🧭 目標方位 (Heading)</span>
-        <span class="hud-metric-val" id="hud-bearing-val">計算中...</span>
-      </div>
-    </div>
-    <div class="hud-actions" id="hud-actions"></div>
-  </div>
-
-  <!-- Cards Container -->
-  <div class="itinerary-list" id="card-container"></div>
-
-  <div class="tips-box">
-    <strong>💡 導航與即時功能提示：</strong><br>
-    • <strong>💱 韓元換算小工具</strong>：直接輸入韓元金額即可秒算台幣，附常用預設金額快速點選。<br>
-    • <strong>🌤️ Open-Meteo 即時氣象</strong>：連網時自動抓取濟州未來幾天最新真實溫差與降雨機率。<br>
-    • <strong>🚗 OSRM 緊湊公路導航</strong>：每張卡片頂部時間後方直接顯示實際路徑里程與車程。<br>
-    • <strong>四大導航 App</strong>：支援 💛 Kakao Map、💚 NAVER Map、🔴 Google Map 與 🚙 Waze。<br>
-    • <strong>🔄 下拉重新定位</strong>：手動切換日期後，頂部向下拉動即可重新判定並鎖定目前進行中景點。<br>
-    • <strong>🧭 即時坐向</strong>：置中 1.5x 羅盤，點擊啟動方向感測，右側「⏹️ 停止」可關閉感測節電。
-  </div>
-
-  <div class="footer-meta">
-    Jeju Helper • Version Code: <span id="ver-footer">v4.2.0 (Build 20260817)</span>
-  </div>
-</main>
-
-<div id="toast">已複製到剪貼簿</div>
-
-<script>
-const VERSION_CODE = "v4.2.0 (Build 20260817)";
-const DEFAULT_RATE = 0.024; // 1 KRW = 0.024 TWD
-
-// Currency Calculation
-function calculateTWD() {
-  const krwInput = document.getElementById('krw-input');
-  const twdResult = document.getElementById('twd-result');
-  const krw = parseFloat(krwInput.value) || 0;
-  const twd = Math.round(krw * DEFAULT_RATE);
-  twdResult.innerText = `NT$ ${twd.toLocaleString()}`;
-}
-
-function setPresetKRW(amount) {
-  document.getElementById('krw-input').value = amount;
-  calculateTWD();
-}
-
-// Precise POI Coordinates (Lat, Lng)
-const POI_COORDS = {
-  "제주국제공항": { lat: 33.5066, lng: 126.4930 },
-  "제주민속오일시장": { lat: 33.4975, lng: 126.4758 },
-  "9.81파크 제주": { lat: 33.3888, lng: 126.3683 },
-  "서귀포 런호텔": { lat: 33.2506, lng: 126.5583 },
-  "서귀포매일올레시장": { lat: 33.2502, lng: 126.5638 },
-  "쇠소깍": { lat: 33.2525, lng: 126.6231 },
-  "아쿠아플라넷 제주": { lat: 33.4328, lng: 126.9279 },
-  "보물섬펜션": { lat: 33.4735, lng: 126.9150 },
-  "성산일출봉": { lat: 33.4586, lng: 126.9423 },
-  "스누피가든": { lat: 33.4327, lng: 126.7766 },
-  "우정원베이커리 제주삼나무점": { lat: 33.4350, lng: 126.7800 },
-  "만장굴": { lat: 33.5284, lng: 126.7716 },
-  "대동호텔": { lat: 33.5134, lng: 126.5263 },
-  "동문재래시장": { lat: 33.5126, lng: 126.5282 },
-  "애월카페거리 / 한담해변": { lat: 33.4601, lng: 126.3113 },
-  "이호테우해수욕장": { lat: 33.4981, lng: 126.4529 },
-  "제주시 칠성로상점가 / 중앙로": { lat: 33.5147, lng: 126.5270 }
-};
-
-const tripData = {
-  1: {
-    dateStr: "2026-08-17",
-    dayLabel: "Day 1: 8/17 (一) 抵達濟州與西部動感之旅",
-    weather: {
-      region: "濟州市 ➔ 西部 ➔ 西歸浦市",
-      condition: "多雲時晴，午後偏熱",
-      icon: "🌤️",
-      tempRange: "26°C ~ 31°C",
-      rainProb: "20%"
-    },
-    items: [
-      {
-        id: "d1-1",
-        time: "09:25 - 10:30",
-        startTime: "09:25",
-        endTime: "10:30",
-        title: "✈️ 抵達濟州國際機場 & 取車",
-        transitInline: "🚗 步行接駁區",
-        korName: "제주국제공항",
-        engName: "Jeju International Airport",
-        phone: "1661-2626",
-        address: "제주 제주시 공항로 2",
-        note: "辦理入境與租車手續，預計約 10:30 出發開車。",
-        kakaoQuery: "제주국제공항",
-        naverQuery: "제주국제공항",
-        googleQuery: "Jeju International Airport 제주국제공항",
-        wazeQuery: "Jeju International Airport"
-      },
-      {
-        id: "d1-2",
-        time: "10:40 - 12:30",
-        startTime: "10:40",
-        endTime: "12:30",
-        title: "🍜 逛傳統市場與午餐",
-        transitInline: "🚗 4.5 km · 約 10 分",
-        korName: "제주민속오일시장",
-        engName: "Jeju Folk Five-Day Oil Market",
-        phone: "064-743-5985",
-        address: "제주 제주시 오일장서길 26",
-        note: "逢 2、7 開市，正好趕上！推薦感受當地市集氛圍並享用平價道地小吃。",
-        kakaoQuery: "제주민속오일시장",
-        naverQuery: "제주민속오일시장",
-        googleQuery: "Jeju Folk Five-Day Oil Market 제주민속오일시장",
-        wazeQuery: "제주민속오일시장"
-      },
-      {
-        id: "d1-3",
-        time: "13:30 - 16:30",
-        startTime: "13:30",
-        endTime: "16:30",
-        title: "🏎️ 9.81 Park 室內外競速 (預約 3pm)",
-        transitInline: "🚗 18.2 km · 約 30 分",
-        korName: "9.81파크 제주",
-        engName: "9.81 Park Jeju",
-        phone: "1833-9810",
-        address: "제주 제주시 애월읍 천덕로 880-24",
-        note: "體驗無動力重力賽車，冷氣房內暢玩室內遊樂設施，避開午後酷熱時段。",
-        kakaoQuery: "9.81파크 제주",
-        naverQuery: "9.81파크 제주",
-        googleQuery: "9.81 Park Jeju 9.81파크 제주",
-        wazeQuery: "9.81 Park Jeju"
-      },
-      {
-        id: "d1-4",
-        time: "17:20 - 18:00",
-        startTime: "17:20",
-        endTime: "18:00",
-        title: "🏨 西歸浦 Run Hotel 辦理入住",
-        transitInline: "🚗 31.5 km · 約 45 分",
-        korName: "서귀포 런호텔",
-        engName: "Run Hotel Seogwipo",
-        phone: "064-763-7100",
-        address: "제주 서귀포시 서문로 41",
-        note: "西歸浦市區辦理入住，稍作休息洗漱。",
-        kakaoQuery: "서귀포 런호텔",
-        naverQuery: "서귀포 런호텔",
-        googleQuery: "Run Hotel Seogwipo 서귀포 런호텔",
-        wazeQuery: "서귀포 런호텔"
-      },
-      {
-        id: "d1-5",
-        time: "18:00 - 20:30",
-        startTime: "18:00",
-        endTime: "20:30",
-        title: "🥩 西歸浦每天偶來市場 & 黑豬肉晚餐",
-        transitInline: "🚶 步行約 5 分鐘",
-        korName: "서귀포매일올레시장",
-        engName: "Seogwipo Olle Market",
-        phone: "064-762-1949",
-        address: "제주 서귀포시 중앙로62번길 18",
-        note: "高評價黑豬肉推薦：每日偶來豚 (매일올레돈 / 064-763-9289) 或 男妹黑豬肉 (남매흑돼지 / 064-763-6633)。",
-        kakaoQuery: "서귀포매일올레시장",
-        naverQuery: "서귀포매일올레시장",
-        googleQuery: "Seogwipo Maeil Olle Market 서귀포매일올레시장",
-        wazeQuery: "서귀포매일올레시장"
-      }
-    ]
-  },
-  2: {
-    dateStr: "2026-08-18",
-    dayLabel: "Day 2: 8/18 (二) 南部海岸消暑與海洋世界",
-    weather: {
-      region: "西歸浦市 ➔ 南部海岸 ➔ 城山",
-      condition: "晴朗炎熱，海邊紫外線強",
-      icon: "☀️",
-      tempRange: "27°C ~ 32°C",
-      rainProb: "10%"
-    },
-    items: [
-      {
-        id: "d2-1",
-        time: "10:15 - 12:15",
-        startTime: "10:15",
-        endTime: "12:15",
-        title: "🛶 牛沼河口 (絕美火山岩河道)",
-        transitInline: "🚗 7.8 km · 約 15 分",
-        korName: "쇠소깍",
-        engName: "Soesokkak Estuary",
-        phone: "064-732-1562",
-        address: "제주 서귀포시 쇠소깍로 104",
-        note: "漫步欣賞翠綠深水，可體驗透明獨木舟或黑沙灘踏浪。",
-        kakaoQuery: "쇠소깍",
-        naverQuery: "쇠소깍",
-        googleQuery: "Soesokkak Estuary 쇠소깍",
-        wazeQuery: "쇠소깍"
-      },
-      {
-        id: "d2-2",
-        time: "13:00 - 16:00",
-        startTime: "13:00",
-        endTime: "16:00",
-        title: "🐟 Aqua Planet 濟州 (水族館 & 午餐)",
-        transitInline: "🚗 38.2 km · 約 45 分",
-        korName: "아쿠아플라넷 제주",
-        engName: "Aqua Planet Jeju",
-        phone: "1833-7001",
-        address: "제주 서귀포시 성산읍 섭지코지로 95",
-        note: "亞洲最大規模水族館，室內避暑首選，可於館內或周邊享用午餐。",
-        kakaoQuery: "아쿠아플라넷 제주",
-        naverQuery: "아쿠아플라넷 제주",
-        googleQuery: "Aqua Planet Jeju 아쿠아플라넷 제주",
-        wazeQuery: "Aqua Planet Jeju"
-      },
-      {
-        id: "d2-3",
-        time: "16:30 - 20:00",
-        startTime: "16:30",
-        endTime: "20:00",
-        title: "🏡 城山 Bomulseom Pension 入住休息",
-        transitInline: "🚗 5.2 km · 約 10 分",
-        korName: "보물섬펜션",
-        engName: "Bomulseom Pension (Treasure Island)",
-        phone: "064-784-2552",
-        address: "제주 서귀포시 성산읍 환해장성로 593",
-        note: "辦理入住，早點吃晚餐就寢，為隔日清晨城山日出儲備體力。",
-        kakaoQuery: "보물섬펜션",
-        naverQuery: "보물섬펜션",
-        googleQuery: "Bomulseom Pension Jeju 성산 보물섬펜션",
-        wazeQuery: "보물섬펜션"
-      }
-    ]
-  },
-  3: {
-    dateStr: "2026-08-19",
-    dayLabel: "Day 3: 8/19 (三) 日出奇景與東部森林",
-    weather: {
-      region: "城山 ➔ 東部森林 ➔ 濟州市",
-      condition: "清晨微涼舒適，日間多雲偶晴",
-      icon: "⛅",
-      tempRange: "25°C ~ 30°C",
-      rainProb: "20%"
-    },
-    items: [
-      {
-        id: "d3-1",
-        time: "05:10 - 08:00",
-        startTime: "05:10",
-        endTime: "08:00",
-        title: "🌅 城山日出峰 登頂賞日出",
-        transitInline: "🚗 3.1 km · 約 5 分",
-        korName: "성산일출봉",
-        engName: "Seongsan Ilchulbong",
-        phone: "064-783-0959",
-        address: "제주 서귀포시 성산읍 일출로 284-12",
-        note: "8月份日出約 05:50。下山後回民宿補眠並於 10:00 前辦理退房。",
-        kakaoQuery: "성산일출봉",
-        naverQuery: "성산일출봉",
-        googleQuery: "Seongsan Ilchulbong 성산일출봉",
-        wazeQuery: "Seongsan Ilchulbong"
-      },
-      {
-        id: "d3-2",
-        time: "10:30 - 12:30",
-        startTime: "10:30",
-        endTime: "12:30",
-        title: "🐶 史努比花園 (Snoopy Garden)",
-        transitInline: "🚗 18.5 km · 約 25 分",
-        korName: "스누피가든",
-        engName: "Snoopy Garden",
-        phone: "064-903-1111",
-        address: "제주 제주시 구좌읍 금백조로 930",
-        note: "室內豐富展區與廣大森林庭園拍照散步。",
-        kakaoQuery: "스누피가든",
-        naverQuery: "스누피가든",
-        googleQuery: "Snoopy Garden Jeju 스누피가든",
-        wazeQuery: "Snoopy Garden"
-      },
-      {
-        id: "d3-3",
-        time: "13:00 - 14:30",
-        startTime: "13:00",
-        endTime: "14:30",
-        title: "☕ Woojungwon Bakery 杉木店 (午餐咖啡)",
-        transitInline: "🚗 1.2 km · 約 3 分",
-        korName: "우정원베이커리 제주삼나무점",
-        engName: "Woojungwon Bakery",
-        phone: "064-782-9300",
-        address: "제주 제주시 구좌읍 금백조로 930",
-        note: "自然景觀烘焙咖啡廳，享用香醇咖啡與現烤麵包輕食午餐。",
-        kakaoQuery: "우정원베이커리 제주삼나무점",
-        naverQuery: "우정원베이커리 제주삼나무점",
-        googleQuery: "우정원베이커리 제주삼나무점 Woojungwon Bakery Jeju",
-        wazeQuery: "우정원베이커리 제주삼나무점"
-      },
-      {
-        id: "d3-4",
-        time: "15:00 - 16:30",
-        startTime: "15:00",
-        endTime: "16:30",
-        title: "🪨 萬丈窟 (天然冷氣房探險)",
-        transitInline: "🚗 14.8 km · 約 20 分",
-        korName: "만장굴",
-        engName: "Manjanggul Cave",
-        phone: "064-710-7903",
-        address: "제주 제주시 구좌읍 만장굴길 182",
-        note: "洞內常年維持 11~15 度極其涼爽，探索天然玄武岩熔岩隧道。",
-        kakaoQuery: "만장굴",
-        naverQuery: "만장굴",
-        googleQuery: "Manjanggul Cave 만장굴",
-        wazeQuery: "Manjanggul Cave"
-      },
-      {
-        id: "d3-5",
-        time: "17:30 - 18:30",
-        startTime: "17:30",
-        endTime: "18:30",
-        title: "🏨 濟州市區 Daedong Hotel 辦理入住",
-        transitInline: "🚗 28.2 km · 約 40 分",
-        korName: "대동호텔",
-        engName: "Daedong Hotel Jeju",
-        phone: "064-722-3838",
-        address: "제주 제주시 관덕로15길 6",
-        note: "市中心便利飯店，步行即可抵達商圈與市場。",
-        kakaoQuery: "대동호텔",
-        naverQuery: "대동호텔",
-        googleQuery: "Daedong Hotel Jeju 대동호텔",
-        wazeQuery: "대동호텔"
-      },
-      {
-        id: "d3-6",
-        time: "18:30 - 21:00",
-        startTime: "18:30",
-        endTime: "21:00",
-        title: "🏮 東門傳統市場 散步吃宵夜",
-        transitInline: "🚶 步行約 3 分鐘",
-        korName: "동문재래시장",
-        engName: "Dongmun Traditional Market",
-        phone: "064-752-3001",
-        address: "제주 제주시 관덕로14길 20",
-        note: "散步即達，大啖熱門夜市小吃、生魚片與柑橘甜品。",
-        kakaoQuery: "동문재래시장",
-        naverQuery: "동문재래시장",
-        googleQuery: "Dongmun Traditional Market 동문재래시장",
-        wazeQuery: "Dongmun Traditional Market"
-      }
-    ]
-  },
-  4: {
-    dateStr: "2026-08-20",
-    dayLabel: "Day 4: 8/20 (四) 西北海岸浪漫海景",
-    weather: {
-      region: "涯月海邊 ➔ 梨湖 ➔ 濟州市區",
-      condition: "陽光明媚，海風舒適，適合看夕陽",
-      icon: "☀️",
-      tempRange: "26°C ~ 31°C",
-      rainProb: "10%"
-    },
-    items: [
-      {
-        id: "d4-1",
-        time: "10:40 - 13:30",
-        startTime: "10:40",
-        endTime: "13:30",
-        title: "☕ 涯月咖啡街 & 漢潭海邊散步路",
-        transitInline: "🚗 22.4 km · 約 38 分",
-        korName: "애월카페거리 / 한담해변",
-        engName: "Aewol Cafe Street / Handam Coast",
-        phone: "064-728-3981",
-        address: "제주 제주시 애월읍 애월로1길 24-9",
-        note: "沿著海岸線散步，挑選特色海景咖啡廳戶外座吹海風享用下午茶。",
-        kakaoQuery: "애월한담해변",
-        naverQuery: "애월한담해변",
-        googleQuery: "Aewol Cafe Street 애월카페거리",
-        wazeQuery: "애월한담해변"
-      },
-      {
-        id: "d4-2",
-        time: "14:30 - 15:30",
-        startTime: "14:30",
-        endTime: "15:30",
-        title: "🐴 梨湖木筏海邊 紅白小馬燈塔",
-        transitInline: "🚗 15.6 km · 約 25 分",
-        korName: "이호테우해수욕장",
-        engName: "Iho Tewoo Beach",
-        phone: "064-728-3994",
-        address: "제주 제주시 도리로 20",
-        note: "打卡紅白雙色小馬造型防波堤燈塔，留念經典地標。",
-        kakaoQuery: "이호테우해수욕장",
-        naverQuery: "이호테우해수욕장",
-        googleQuery: "Iho Tewoo Beach 이호테우해수욕장",
-        wazeQuery: "Iho Tewoo Beach"
-      },
-      {
-        id: "d4-3",
-        time: "16:00 - 20:00",
-        startTime: "16:00",
-        endTime: "20:00",
-        title: "🛍️ 濟州市區最後採買 & 晚餐大餐",
-        transitInline: "🚗 8.3 km · 約 18 分",
-        korName: "제주시 칠성로상점가 / 중앙로",
-        engName: "Jeju Chilseong-ro Shopping Street",
-        phone: "064-723-1510",
-        address: "제주 제주시 중앙로 일대",
-        note: "返回濟州市區飯店周邊採買伴手禮，挑選市區特色餐廳為旅程慶祝。",
-        kakaoQuery: "칠성로상점가",
-        naverQuery: "칠성로상점가",
-        googleQuery: "Chilseongro Shopping Street 칠성로상점가",
-        wazeQuery: "Chilseong-ro Shopping Street"
-      }
-    ]
-  },
-  5: {
-    dateStr: "2026-08-21",
-    dayLabel: "Day 5: 8/21 (五) 賦歸",
-    weather: {
-      region: "濟州市區 ➔ 濟州機場",
-      condition: "多雲時晴，早晨能見度良好",
-      icon: "🌤️",
-      tempRange: "25°C ~ 30°C",
-      rainProb: "10%"
-    },
-    items: [
-      {
-        id: "d5-1",
-        time: "08:15 - 10:30",
-        startTime: "08:15",
-        endTime: "10:30",
-        title: "🛫 抵達機場、還車與登機報到",
-        transitInline: "🚗 4.8 km · 約 12 分",
-        korName: "제주국제공항",
-        engName: "Jeju International Airport",
-        phone: "1661-2626",
-        address: "제주 제주시 공항로 2",
-        note: "辦理還車手續、退稅與登機報到，準備搭乘 10:30 班機平安返家。",
-        kakaoQuery: "제주국제공항",
-        naverQuery: "제주국제공항",
-        googleQuery: "Jeju International Airport 제주국제공항",
-        wazeQuery: "Jeju International Airport"
-      }
-    ]
-  }
-};
-
-let currentSelectedDay = 1;
-let userGPS = null; // { lat, lng }
-let targetNextItem = null;
-
-function getKSTDate() {
-  const now = new Date();
-  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  return new Date(utc + (3600000 * 9));
-}
-
-function copyText(text, label) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast(`已複製 ${label}`);
-    });
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast(`已複製 ${label}`);
-  }
-}
-
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.innerText = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
-function askGeminiGuide(title, korName, engName, address) {
-  const prompt = `我現在正在濟州島自駕旅遊，目前地點在【${korName} / ${engName}】（地址：${address}）。
-請以繁體中文 (台灣) 為我提供：
-1. 💡 此地點的 1 分鐘精華背景與必看亮點。
-2. 🚗 距離此處車程 10~15 分鐘以內、在地人高評價（4.2 星以上）的 2 個私房隱藏景點或必吃美食/咖啡廳（請附上韓文名以便導航）。
-3. ⚠️ 現場參觀、自駕停車或避坑的實用建議。`;
-
-  copyText(prompt, "提示詞！跳轉後直接按 Ctrl+V 貼上送出");
-
-  const geminiUrl = `https://gemini.google.com/app`;
-  setTimeout(() => {
-    window.open(geminiUrl, '_blank');
-  }, 500);
-}
-
-/* =========================================================
-   OPEN-METEO LIVE WEATHER INTEGRATION
-   ========================================================= */
-function parseWmoWeather(code) {
-  if (code === 0) return { icon: "☀️", text: "晴空萬里" };
-  if (code >= 1 && code <= 3) return { icon: "🌤️", text: "多雲時晴" };
-  if (code >= 45 && code <= 48) return { icon: "🌫️", text: "局部晨霧" };
-  if (code >= 51 && code <= 65) return { icon: "🌧️", text: "陣雨" };
-  if (code >= 80 && code <= 82) return { icon: "🌦️", text: "短暫雷陣雨" };
-  if (code >= 95) return { icon: "⛈️", text: "雷雨" };
-  return { icon: "⛅", text: "多雲" };
-}
-
-async function fetchLiveOpenMeteo() {
-  const url = "https://api.open-meteo.com/v1/forecast?latitude=33.5066&longitude=126.4930&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&timezone=Asia%2FSeoul";
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return;
-    const data = await res.json();
-    if (!data.daily) return;
-
-    for (let d = 1; d <= 5; d++) {
-      const idx = d - 1;
-      const maxT = Math.round(data.daily.temperature_2m_max[idx]);
-      const minT = Math.round(data.daily.temperature_2m_min[idx]);
-      const pop = data.daily.precipitation_probability_max[idx] || 0;
-      const wmo = parseWmoWeather(data.daily.weathercode[idx]);
-
-      // Update in memory
-      tripData[d].weather.tempRange = `${minT}°C ~ ${maxT}°C`;
-      tripData[d].weather.rainProb = `${pop}%`;
-      tripData[d].weather.icon = wmo.icon;
-      tripData[d].weather.condition = wmo.text;
-
-      // Update Tab
-      const tabEl = document.getElementById(`tab-w-${d}`);
-      if (tabEl) {
-        tabEl.innerText = `${wmo.icon} ${maxT}° / ${pop}%`;
-      }
-    }
-    updateWeatherBanner(tripData[currentSelectedDay]);
-  } catch (e) {
-    console.warn("Open-Meteo 離線或請求失敗，使用預設氣象數據", e);
-  }
-}
-
-/* =========================================================
-   OSRM ROUTING & BEARING MATH
-   ========================================================= */
-function calcBearing(lat1, lon1, lat2, lon2) {
-  const y = Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180);
-  const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
-            Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180);
-  let brng = Math.atan2(y, x) * 180 / Math.PI;
-  return Math.round((brng + 360) % 360);
-}
-
-function degreesToDirection(deg) {
-  const directions = [
-    { name: "正北 (N)", min: 348.75, max: 360 },
-    { name: "正北 (N)", min: 0, max: 11.25 },
-    { name: "北東北 (NNE)", min: 11.25, max: 33.75 },
-    { name: "東北 (NE)", min: 33.75, max: 56.25 },
-    { name: "東東北 (ENE)", min: 56.25, max: 78.75 },
-    { name: "正東 (E)", min: 78.75, max: 101.25 },
-    { name: "東東南 (ESE)", min: 101.25, max: 123.75 },
-    { name: "東南 (SE)", min: 123.75, max: 146.25 },
-    { name: "南東南 (SSE)", min: 146.25, max: 168.75 },
-    { name: "正南 (S)", min: 168.75, max: 191.25 },
-    { name: "南西南 (SSW)", min: 191.25, max: 213.75 },
-    { name: "西南 (SW)", min: 213.75, max: 236.25 },
-    { name: "西西南 (WSW)", min: 236.25, max: 258.75 },
-    { name: "正西 (W)", min: 258.75, max: 281.25 },
-    { name: "西西北 (WNW)", min: 281.25, max: 303.75 },
-    { name: "西北 (NW)", min: 303.75, max: 326.25 },
-    { name: "北西北 (NNW)", min: 326.25, max: 348.75 }
-  ];
-  for (let d of directions) {
-    if (deg >= d.min && deg < d.max) return d.name;
-  }
-  return "正北 (N)";
-}
-
-async function fetchOsrmDrivingRoute(lat1, lon1, lat2, lon2) {
-  const url = `https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.code === "Ok" && data.routes && data.routes.length > 0) {
-      const r = data.routes[0];
-      return {
-        km: (r.distance / 1000).toFixed(1),
-        min: Math.round(r.duration / 60)
-      };
-    }
-  } catch (e) {
-    console.warn("OSRM 路由請求逾時或失敗", e);
-  }
-  return null;
-}
-
-/* =========================================================
-   HUD DASHBOARD ENGINE
-   ========================================================= */
-async function updateHUDMetrics(activeItem) {
-  if (!targetNextItem) return;
-  const targetCoords = POI_COORDS[targetNextItem.korName];
-  if (!targetCoords) return;
-
-  const distEl = document.getElementById('hud-dist-val');
-  const bearEl = document.getElementById('hud-bearing-val');
-
-  let originCoords = null;
-  if (userGPS) {
-    originCoords = userGPS;
-  } else if (activeItem && POI_COORDS[activeItem.korName]) {
-    originCoords = POI_COORDS[activeItem.korName];
-  }
-
-  if (originCoords) {
-    const b = calcBearing(originCoords.lat, originCoords.lng, targetCoords.lat, targetCoords.lng);
-    const dir = degreesToDirection(b);
-    bearEl.innerText = `🧭 ${dir} ${b}°`;
-    bearEl.className = "hud-metric-val live";
-
-    // Call OSRM
-    distEl.innerText = "正在計算公路路徑...";
-    const osrm = await fetchOsrmDrivingRoute(originCoords.lat, originCoords.lng, targetCoords.lat, targetCoords.lng);
-    if (osrm) {
-      distEl.innerText = `🚗 ${osrm.km} km · 約 ${osrm.min} 分`;
-      distEl.className = "hud-metric-val live";
-    } else {
-      distEl.innerText = `📍 直線約 ${calcBearing(originCoords.lat, originCoords.lng, targetCoords.lat, targetCoords.lng)}° (連線逾時)`;
-    }
-  } else {
-    distEl.innerText = "尚未定位起點";
-    bearEl.innerText = "尚未定位";
-    distEl.className = "hud-metric-val";
-    bearEl.className = "hud-metric-val";
-  }
-}
-
-function updateHUDDashboard(dayIndex, activeItem, nextItem, isToday) {
-  const modeTitle = document.getElementById('hud-mode-title');
-  const timeTag = document.getElementById('hud-time-tag');
-  const nowText = document.getElementById('hud-now-text');
-  const nextText = document.getElementById('hud-next-text');
-  const actionsContainer = document.getElementById('hud-actions');
-
-  targetNextItem = nextItem || activeItem;
-
-  if (isToday) {
-    modeTitle.innerText = `🚀 即時自駕儀表盤 (Day ${dayIndex})`;
-    timeTag.innerText = `進行中`;
-    nowText.innerHTML = `📍 目前所在：<strong>${activeItem ? activeItem.title : '出發前往景點途中'}</strong>`;
-  } else {
-    modeTitle.innerText = `📅 行程預覽儀表盤 (Day ${dayIndex})`;
-    timeTag.innerText = `預覽模式`;
-    nowText.innerHTML = `📍 起點：<strong>${activeItem ? activeItem.title : '-'}</strong>`;
-  }
-
-  if (targetNextItem) {
-    nextText.innerText = `${targetNextItem.title} (${targetNextItem.time})`;
-    
-    const gUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(targetNextItem.googleQuery)}`;
-    const wUrl = `https://waze.com/ul?q=${encodeURIComponent(targetNextItem.wazeQuery)}&navigate=yes`;
-
-    actionsContainer.innerHTML = `
-      <a class="hud-nav-btn kakao" href="kakaomap://search?q=${encodeURIComponent(targetNextItem.kakaoQuery)}" target="_blank">
-        <span>💛 Kakao</span>
-      </a>
-      <a class="hud-nav-btn naver" href="nmap://search?query=${encodeURIComponent(targetNextItem.naverQuery)}" target="_blank">
-        <span>💚 NAVER</span>
-      </a>
-      <a class="hud-nav-btn google" href="${gUrl}" target="_blank">
-        <span>🔴 Google</span>
-      </a>
-      <a class="hud-nav-btn waze" href="${wUrl}" target="_blank">
-        <span>🚙 Waze</span>
-      </a>
-    `;
-  }
-
-  updateHUDMetrics(activeItem);
-}
-
-/* =========================================================
-   DATE + TIME DUAL EXACT DETECTION
-   ========================================================= */
-function autoDetectDayAndHighlight() {
-  const kst = getKSTDate();
-  const curYMD = `${kst.getFullYear()}-${String(kst.getMonth()+1).padStart(2,'0')}-${String(kst.getDate()).padStart(2,'0')}`;
-  const curHM = `${String(kst.getHours()).padStart(2,'0')}:${String(kst.getMinutes()).padStart(2,'0')}`;
-
-  let matchedDay = null;
-  let isToday = false;
-
-  for (let d = 1; d <= 5; d++) {
-    if (tripData[d].dateStr === curYMD) {
-      matchedDay = d;
-      isToday = true;
-      break;
-    }
-  }
-
-  if (!matchedDay) {
-    if (curYMD < tripData[1].dateStr) {
-      matchedDay = 1;
-    } else if (curYMD > tripData[5].dateStr) {
-      matchedDay = 5;
-    } else {
-      matchedDay = 1;
-    }
-  }
-
-  const dayPlan = tripData[matchedDay];
-  const items = dayPlan.items;
-  let activeItem = null;
-  let nextItem = null;
-
-  for (let i = 0; i < items.length; i++) {
-    if (curHM >= items[i].startTime && curHM <= items[i].endTime) {
-      activeItem = items[i];
-      nextItem = items[i+1] || null;
-      break;
-    }
-  }
-
-  if (!activeItem) {
-    for (let i = 0; i < items.length; i++) {
-      if (curHM < items[i].startTime) {
-        nextItem = items[i];
-        activeItem = items[i-1] || null;
-        break;
-      }
-    }
-  }
-
-  if (!activeItem && !nextItem) {
-    activeItem = items[items.length - 1];
-    nextItem = null;
-  }
-
-  return { day: matchedDay, activeItem, nextItem, isToday };
-}
-
-function updateWeatherBanner(dayData) {
-  if (!dayData.weather) return;
-  document.getElementById('weather-icon').innerText = dayData.weather.icon;
-  document.getElementById('weather-title').innerText = `${dayData.weather.region} 當日天氣`;
-  document.getElementById('weather-desc').innerText = dayData.weather.condition;
-  document.getElementById('weather-temp').innerText = dayData.weather.tempRange;
-  document.getElementById('weather-rain').innerText = `💧 降雨機率 ${dayData.weather.rainProb}`;
-}
-
-function renderDay(dayIndex, highlightItemId = null) {
-  currentSelectedDay = dayIndex;
-
-  const buttons = document.querySelectorAll('.day-btn');
-  buttons.forEach((b, idx) => {
-    if (idx + 1 === dayIndex) b.classList.add('active');
-    else b.classList.remove('active');
-  });
-
-  const dayData = tripData[dayIndex];
-  updateWeatherBanner(dayData);
-
-  const container = document.getElementById('card-container');
-  container.innerHTML = '';
-
-  dayData.items.forEach(item => {
-    const isHighlighted = (highlightItemId && item.id === highlightItemId);
-    const card = document.createElement('div');
-    card.className = `card ${isHighlighted ? 'now-card' : ''}`;
-    card.id = item.id;
-
-    const googleMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.googleQuery)}`;
-    const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(item.wazeQuery)}&navigate=yes`;
-
-    const safeTitle = item.title.replace(/'/g, "\'");
-    const safeKor = item.korName.replace(/'/g, "\'");
-    const safeEng = item.engName.replace(/'/g, "\'");
-    const safeAddr = item.address.replace(/'/g, "\'");
-
-    card.innerHTML = `
-      <div class="card-header">
-        <div class="card-meta-line">
-          <span class="card-time">⏰ ${item.time}</span>
-          <span class="card-transit-inline">${item.transitInline}</span>
+  <!-- 頂部導航列 (已移除時間，僅保留模式切換按鈕) -->
+  <header class="sticky top-0 z-40 bg-gradient-to-r from-red-800 to-amber-700 dark:from-stone-900 dark:to-neutral-900 text-white shadow-md px-4 py-3 border-b dark:border-slate-800">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="text-[22px]">🚗</span>
+        <div>
+          <h1 class="text-[20px] font-black leading-tight">福岡 6 天全自駕指南</h1>
+          <p class="text-[15px] text-amber-200 dark:text-amber-300 font-medium">11/08(日) - 11/13(五) 17:00還車</p>
         </div>
-        <div class="card-title">${item.title}</div>
+      </div>
+      <!-- 主題切換鍵 -->
+      <button onclick="toggleDarkModeManual()" id="theme-btn" class="w-10 h-10 rounded-full bg-white/20 dark:bg-slate-800 flex items-center justify-center text-[19px] active:scale-90 transition">
+        <i class="fas fa-moon text-yellow-300"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主要內容區 -->
+  <main class="max-w-md mx-auto p-4 space-y-4">
+
+    <!-- ================= TAB 1: 行程與停車 ================= -->
+    <section id="tab-itinerary" class="tab-content space-y-4">
+      <!-- 快捷天數切換鈕 -->
+      <div class="flex space-x-2 overflow-x-auto hide-scrollbar py-1">
+        <button onclick="filterDay(1)" id="day-btn-1" class="day-btn bg-red-700 text-white px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow">D1 11/8(日)</button>
+        <button onclick="filterDay(2)" id="day-btn-2" class="day-btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow-sm">D2 11/9(一)</button>
+        <button onclick="filterDay(3)" id="day-btn-3" class="day-btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow-sm">D3 11/10(二)</button>
+        <button onclick="filterDay(4)" id="day-btn-4" class="day-btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow-sm">D4 11/11(三)</button>
+        <button onclick="filterDay(5)" id="day-btn-5" class="day-btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow-sm">D5 11/12(四)</button>
+        <button onclick="filterDay(6)" id="day-btn-6" class="day-btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow-sm">D6 11/13(五)</button>
       </div>
 
-      <div class="info-grid">
-        <div class="info-row">
-          <span class="info-label">韓文名稱</span>
-          <span class="info-val">${item.korName}</span>
-          <button class="copy-btn" onclick="copyText('${safeKor}', '韓文名')">複製</button>
+      <!-- D1 -->
+      <div id="day-card-1" class="day-card space-y-3">
+        <div class="bg-red-50 dark:bg-red-950/60 border-l-4 border-red-700 p-3.5 rounded-r-xl">
+          <h2 class="font-extrabold text-[19px] text-red-950 dark:text-red-200">Day 1：抵達福岡 → 機場取車自駕 → 博多入住</h2>
+          <p class="text-[15px] text-red-700 dark:text-red-300 mt-0.5">星宇 JX840 抵達 ｜ 取車自駕第 1 天</p>
         </div>
-        <div class="info-row">
-          <span class="info-label">英文/中文</span>
-          <span class="info-val" style="color:#94a3b8; font-weight:normal;">${item.engName}</span>
+
+        <!-- HM 租車憑證卡片 -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 rounded-2xl shadow-md space-y-2 border border-slate-700">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+            <span class="font-black text-[18px] text-amber-300"><i class="fas fa-car mr-1.5"></i>HM 租車預約確認憑證</span>
+            <span class="text-[13px] bg-emerald-600 px-2 py-0.5 rounded-full font-bold">預約號 140818931</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 text-[15px] text-slate-300">
+            <div>車型：NOTE e-power</div>
+            <div>保障：免責NOC + ETC</div>
+            <div>取車：11/8(日) 19:00</div>
+            <div>還車：11/13(五) 17:00</div>
+            <div class="col-span-2 text-amber-200 font-bold">費用：28,470 円 (現場付款)</div>
+          </div>
+          <div class="pt-1 flex space-x-2">
+            <a href="tel:0926277010" class="flex-1 text-center py-2 bg-blue-600 active:bg-blue-700 text-white font-bold rounded-xl text-[16px]">
+              <i class="fas fa-phone mr-1"></i>接駁電話：092-627-7010
+            </a>
+            <a href="https://maps.google.com/?q=HM+Rent-a-car+Fukuoka+Airport" target="_blank" class="px-3 py-2 bg-slate-700 active:bg-slate-600 text-white rounded-xl text-[15px] font-bold flex items-center">
+              <i class="fas fa-location-dot"></i>
+            </a>
+          </div>
         </div>
-        <div class="info-row">
-          <span class="info-label">電話定位</span>
-          <span class="info-val" style="color:var(--accent); font-family:monospace;">${item.phone}</span>
-          <button class="copy-btn" onclick="copyText('${item.phone}', '電話')">複製</button>
-        </div>
-        <div class="info-row">
-          <span class="info-label">韓文地址</span>
-          <span class="info-val" style="font-size:12px;">${item.address}</span>
-          <button class="copy-btn" onclick="copyText('${safeAddr}', '地址')">複製</button>
+
+        <!-- ANA 博多入住與過夜停車清單 -->
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div>
+              <span class="text-[14px] font-black text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md">20:00 入住</span>
+              <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100 mt-1">全日空皇冠廣場酒店 (ANA 博多)</h3>
+            </div>
+            <a href="https://maps.google.com/?q=ANA+Crowne+Plaza+Fukuoka" target="_blank" class="text-blue-600 dark:text-blue-400 font-bold text-[15px] underline">
+              <i class="fas fa-location-dot mr-1"></i>飯店導航
+            </a>
+          </div>
+
+          <div class="text-[16px] text-slate-600 dark:text-slate-400">
+            TEL: <b class="font-mono text-slate-800 dark:text-slate-200">092-471-7111</b> ｜ MapCode: <b class="font-mono text-slate-800 dark:text-slate-200">13 318 426*04</b>
+          </div>
+
+          <!-- D1 推薦過夜停車場 -->
+          <div class="space-y-2 pt-1">
+            <div class="text-[15px] font-bold text-slate-500">🅿️ 本晚推薦過夜停車場：</div>
+            
+            <!-- 選擇 1 -->
+            <div class="p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300 dark:border-emerald-800 space-y-1">
+              <div class="flex justify-between items-center font-black text-[18px] text-emerald-950 dark:text-emerald-200">
+                <span>🌟 首選：リンエイパーキング</span>
+                <span class="text-emerald-700 dark:text-emerald-400 text-[19px]">夜間 500 円</span>
+              </div>
+              <p class="text-[15px] text-emerald-900 dark:text-emerald-300 leading-snug">博多駅前3-13-1（273台室內，20:00～08:00 只要 500円！步行 2 分鐘）。</p>
+              <div class="text-[14px] text-slate-600 dark:text-slate-400">TEL: 092-474-8848 ｜ MC: 13 318 365*22</div>
+              <a href="https://maps.google.com/?q=福岡県福岡市博多区博多駅前3丁目13-1" target="_blank" class="inline-block text-[15px] font-bold text-blue-700 dark:text-blue-400 underline pt-0.5">
+                <i class="fas fa-location-dot mr-1"></i>開啟 リンエイパーキング 導航 ➔
+              </a>
+            </div>
+
+            <!-- 選擇 2 (附導航 Link) -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <div class="flex justify-between items-center font-black text-[17px]">
+                <span>紙与パーキング駅三 (備選)</span>
+                <span class="text-[18px]">夜間 800 円</span>
+              </div>
+              <p class="text-[15px] text-slate-600 dark:text-slate-300">博多駅前3-26-1 (247台自走式，20:00～08:00 800円，寬敞好停)。</p>
+              <div class="text-[14px] text-slate-500">TEL: 092-411-4603 ｜ MC: 13 318 486*71</div>
+              <a href="https://maps.google.com/?q=紙与パーキング駅三" target="_blank" class="inline-block text-[15px] font-bold text-blue-700 dark:text-blue-400 underline pt-0.5">
+                <i class="fas fa-location-dot mr-1"></i>開啟 紙与パーキング駅三 導航 ➔
+              </a>
+            </div>
+
+            <!-- 選擇 3 -->
+            <div class="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center text-[15px]">
+              <div>
+                <span class="font-bold">🏨 飯店地下停車場</span>
+                <div class="text-[13px] text-slate-400">直接停地下室免吹風淋雨</div>
+              </div>
+              <div class="font-black text-red-600 dark:text-red-400 text-[17px]">1,600 円 / 泊</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="note-box">📝 ${item.note}</div>
+      <!-- D2 -->
+      <div id="day-card-2" class="day-card space-y-3 hidden">
+        <div class="bg-red-50 dark:bg-red-950/60 border-l-4 border-red-700 p-3.5 rounded-r-xl">
+          <h2 class="font-extrabold text-[19px] text-red-950 dark:text-red-200">Day 2：自駕太宰府/竈門神社 → 由布院慢遊</h2>
+          <p class="text-[15px] text-red-700 dark:text-red-300 mt-0.5">紅葉名所 ＆ 溫泉鄉漫步</p>
+        </div>
 
-      <div class="card-actions">
-        <a class="nav-btn kakao" href="kakaomap://search?q=${encodeURIComponent(item.kakaoQuery)}" target="_blank">
-          <span>💛 Kakao</span>
-        </a>
-        <a class="nav-btn naver" href="nmap://search?query=${encodeURIComponent(item.naverQuery)}" target="_blank">
-          <span>💚 NAVER</span>
-        </a>
-        <a class="nav-btn google" href="${googleMapUrl}" target="_blank">
-          <span>🔴 Google</span>
-        </a>
-        <a class="nav-btn waze" href="${wazeUrl}" target="_blank">
-          <span>🚙 Waze</span>
-        </a>
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">09:40 - 11:30</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">太宰府天滿宮</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">停放太宰府大停車場（500円）。漫步表參道品嚐梅枝餅。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 車機電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">092-922-4444</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">55 364 165*65</b></div>
+            <a href="https://maps.google.com/?q=太宰府天満宮" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至太宰府停車場
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">11:30 - 13:00</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">寶滿宮竈門神社 (紅葉步道)</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">開車 8 分鐘上山（停車400円）。九州頂級楓紅步道絕景。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 車機電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">092-922-4106</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">55 395 385*82</b></div>
+            <a href="https://maps.google.com/?q=竈門神社" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至竈門神社停車場
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md">14:45 之後</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">由布院 ＆ 湯布院別荘 四季彩ホテル</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">飯店附免費停車。傍晚散步金鱗湖薄霧倒影，晚間開車去市區吃豐後牛。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 飯店電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0977-85-8566</b></div>
+            <div>🔢 飯店 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">269 359 864*36</b></div>
+            <div>🌊 金鱗湖 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">269 359 584*75</b></div>
+            <a href="https://maps.google.com/?q=湯布院別荘+四季彩ホテル" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至四季彩酒店
+            </a>
+          </div>
+        </div>
       </div>
 
-      <div class="gemini-action-box">
-        <button class="gemini-btn" onclick="askGeminiGuide('${safeTitle}', '${safeKor}', '${safeEng}', '${safeAddr}')">
-          <span>✨ 用 Gemini 找周邊私房景點/美食與深度介紹</span>
+      <!-- D3 -->
+      <div id="day-card-3" class="day-card space-y-3 hidden">
+        <div class="bg-red-50 dark:bg-red-950/60 border-l-4 border-red-700 p-3.5 rounded-r-xl">
+          <h2 class="font-extrabold text-[19px] text-red-950 dark:text-red-200">Day 3：別府地獄/纜車 → 九重夢大吊橋 → 黑川溫泉</h2>
+          <p class="text-[15px] text-red-700 dark:text-red-300 mt-0.5">翻越山並公路自駕 ｜ 峽谷紅葉 ＆ 秘湯巡禮</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">09:40 - 11:40</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">海地獄 ＆ 鶴見岳纜車 (皆有免費大車位)</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">搭乘纜車登上海拔 1,300 公尺俯瞰別府灣全景。午餐享用別府炸雞天婦羅。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 海地獄電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0977-66-0121</b> (MC: 46 544 507*44)</div>
+            <div>📞 鶴見岳纜車：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0977-22-2278</b> (MC: 46 452 795*61)</div>
+            <a href="https://maps.google.com/?q=別府ロープウェイ" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至鶴見岳纜車站
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">13:30 - 14:30</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">九重「夢」大吊橋（免費停車）</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">走在全日最高吊橋，俯瞰九醉溪峽谷震撼紅葉與雙瀑布。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 車機電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0973-73-3800</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">269 012 150*20</b></div>
+            <a href="https://maps.google.com/?q=九重夢大吊橋" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至大吊橋停車場
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md">15:30 之後</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">黑川溫泉 ＆ 南城苑 (專用免費停車)</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">
+            享受露天秘湯。<b class="text-rose-600 dark:text-rose-400">提醒：溫泉街晚間無外食餐廳，下午進山前務必在超商買足晚餐！</b>
+          </p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 旅館電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0967-44-0553</b></div>
+            <div>🔢 旅館 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">202 089 778*71</b></div>
+            <a href="https://maps.google.com/?q=旅館+南城苑" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至黑川南城苑
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- D4 -->
+      <div id="day-card-4" class="day-card space-y-3 hidden">
+        <div class="bg-red-50 dark:bg-red-950/60 border-l-4 border-red-700 p-3.5 rounded-r-xl">
+          <h2 class="font-extrabold text-[19px] text-red-950 dark:text-red-200">Day 4：自駕耶馬溪一目八景 → 鳥栖 Outlets</h2>
+          <p class="text-[15px] text-red-700 dark:text-red-300 mt-0.5">溪谷奇岩 ＆ 暢快採購夜</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">10:40 - 12:30</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">深耶馬溪「一目八景」（免費公共車位）</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">群猿山奇岩怪石環繞，滿山楓紅絕景。溪畔品嚐手工蕎麥麵。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 代表電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0979-55-2021</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">337 392 342*58</b></div>
+            <a href="https://maps.google.com/?q=一目八景+深耶馬溪" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至一目八景停車場
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">14:15 - 18:30</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">鳥栖 Premium Outlets（超大免費停車）</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">戰利品直接放車箱。晚餐在美食街享用。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 車機電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0942-87-7370</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">37 830 523*28</b></div>
+            <a href="https://maps.google.com/?q=Tosu+Premium+Outlets" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至鳥栖 Outlets
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md">18:30 之後</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">ANA Holiday Inn Tosu (專用免費車位)</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">車輛直接停專屬車位，安靜舒適。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 飯店電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">0942-83-8411</b></div>
+            <div>🔢 飯店 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">37 858 206*66</b></div>
+            <a href="https://maps.google.com/?q=ANA+Holiday+Inn+Tosu" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至鳥栖 Holiday Inn
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- D5 -->
+      <div id="day-card-5" class="day-card space-y-3 hidden">
+        <div class="bg-red-50 dark:bg-red-950/60 border-l-4 border-red-700 p-3.5 rounded-r-xl">
+          <h2 class="font-extrabold text-[19px] text-red-950 dark:text-red-200">Day 5：自駕鳥栖出發 → LaLaport 福岡鋼彈 → 天神過夜</h2>
+          <p class="text-[15px] text-red-700 dark:text-red-300 mt-0.5">全日開車自駕 ｜ 採購伴手禮 ＆ 天神屋台漫步微醺</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">10:30 - 15:30</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">LaLaport 福岡（3,000台超大立體停車場）</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">
+            平日免費停車 2 小時，消費折抵。打卡 1:1 實體 Nu 鋼彈、吃午餐、買伴手禮。
+          </p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 代表電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">092-707-9820</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">13 263 216*11</b></div>
+            <a href="https://maps.google.com/?q=ららぽーと福岡" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至 LaLaport 停車場
+            </a>
+          </div>
+        </div>
+
+        <!-- 天神 Quintessa 入住與過夜停車清單 -->
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div>
+              <span class="text-[14px] font-black text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-md">16:30 入住</span>
+              <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100 mt-1">天神 Quintessa Hotel ＆ 泊車</h3>
+            </div>
+            <a href="https://maps.google.com/?q=クインテッサホテル福岡天神+Comic+and+Books" target="_blank" class="text-blue-600 dark:text-blue-400 font-bold text-[15px] underline">
+              <i class="fas fa-location-dot mr-1"></i>飯店導航
+            </a>
+          </div>
+
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">
+            車輛於門口卸下行李後開往周邊停車場。晚上步行 3-5 分鐘前往天神屋台！
+          </p>
+          <div class="text-[16px] text-slate-600 dark:text-slate-400">
+            TEL: <b class="font-mono text-slate-800 dark:text-slate-200">092-707-2440</b> ｜ MapCode: <b class="font-mono text-slate-800 dark:text-slate-200">13 348 245*17</b>
+          </div>
+
+          <!-- D5 推薦過夜停車場 -->
+          <div class="space-y-2 pt-1">
+            <div class="text-[15px] font-bold text-slate-500">🅿️ 本晚推薦過夜停車場：</div>
+            
+            <!-- 選擇 1 -->
+            <div class="p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl border border-emerald-300 dark:border-emerald-800 space-y-1">
+              <div class="flex justify-between items-center font-black text-[18px] text-emerald-950 dark:text-emerald-200">
+                <span>🌟 首選：ハピネスパーキング天神</span>
+                <span class="text-emerald-700 dark:text-emerald-400 text-[19px]">24hr 1,200 円</span>
+              </div>
+              <p class="text-[15px] text-emerald-900 dark:text-emerald-300 leading-snug">天神3-7-3（90台室內機械管理員防盜，入庫 24 小時上限 1,200円！步行 3 分鐘）。</p>
+              <div class="text-[14px] text-slate-600 dark:text-slate-400">TEL: 092-731-0177 ｜ MC: 13 348 274*00</div>
+              <a href="https://maps.google.com/?q=福岡県福岡市中央区天神3丁目7-3" target="_blank" class="inline-block text-[15px] font-bold text-blue-700 dark:text-blue-400 underline pt-0.5">
+                <i class="fas fa-location-dot mr-1"></i>開啟 ハピネスパーキング 導航 ➔
+              </a>
+            </div>
+
+            <!-- 選擇 2 (附導航 Link) -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <div class="flex justify-between items-center font-black text-[17px]">
+                <span>三井のリパーク天神3丁目第4 (備選)</span>
+                <span class="text-[18px]">夜間 900 円</span>
+              </div>
+              <p class="text-[15px] text-slate-600 dark:text-slate-300">天神3-5-7 (19:00～翌朝11:00 上限 900円，步行 2 分鐘超近)。</p>
+              <div class="text-[14px] text-slate-500">TEL: 0120-325-130 ｜ MC: 13 348 304*44</div>
+              <a href="https://maps.google.com/?q=三井のリパーク+天神3丁目第4" target="_blank" class="inline-block text-[15px] font-bold text-blue-700 dark:text-blue-400 underline pt-0.5">
+                <i class="fas fa-location-dot mr-1"></i>開啟 三井のリパーク 導航 ➔
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D6 -->
+      <div id="day-card-6" class="day-card space-y-3 hidden">
+        <div class="bg-red-50 dark:bg-red-950/60 border-l-4 border-red-700 p-3.5 rounded-r-xl">
+          <h2 class="font-extrabold text-[19px] text-red-950 dark:text-red-200">Day 6：大濠公園湖畔 → teamLab 百道 → 機場加滿油還車</h2>
+          <p class="text-[15px] text-red-700 dark:text-red-300 mt-0.5">全日自駕開車 ｜ 17:00 準時還車返台</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">09:30 - 11:30</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">大濠公園 ＆ 日本庭園紅葉</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">開車 10 分鐘停舞鶴公園收費車位，湖畔漫步與賞楓。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 停車場電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">092-741-2004</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">13 313 779*71</b></div>
+            <a href="https://maps.google.com/?q=舞鶴公園駐車場" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至舞鶴公園停車場
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <span class="text-[14px] font-black text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">12:00 - 15:45</span>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">Mark Is 百道 ＆ teamLab Forest</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">停入 Mark Is 百道室內大停車場（1,300台，消費折抵）。體驗沉浸式光影森林。</p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 代表電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">092-407-1345</b></div>
+            <div>🔢 車機 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">13 341 784*52</b></div>
+            <a href="https://maps.google.com/?q=MARK+IS+福岡ももち" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至 Mark Is 停車場
+            </a>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[14px] font-black text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 px-2 py-0.5 rounded-md">16:15 - 17:00</span>
+            <span class="text-[15px] text-slate-500 font-bold">加滿油還車</span>
+          </div>
+          <h3 class="font-black text-[20px] text-slate-800 dark:text-slate-100">機場旁加油 ＆ HM 租車店還車</h3>
+          <p class="text-[17px] text-slate-600 dark:text-slate-300 leading-relaxed">
+            走都市高速至機場周邊加油站加滿油並保留單據。<b class="text-emerald-700 dark:text-emerald-400 font-black">17:00 前完成還車</b>，專車接駁至航廈（星宇 JX841 19:10 起飛）。
+          </p>
+          <div class="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[16px] space-y-1">
+            <div>📞 HM 租車電話：<b class="text-blue-600 dark:text-blue-400 font-mono text-[18px]">092-627-7010</b></div>
+            <div>🔢 還車站 MapCode：<b class="text-slate-800 dark:text-amber-300 font-mono text-[18px]">13 325 391*52</b></div>
+            <a href="https://maps.google.com/?q=HM+Rent-a-car+Fukuoka+Airport" target="_blank" class="inline-block text-red-700 dark:text-red-400 font-bold underline">
+              <i class="fas fa-location-dot mr-1"></i>導航至還車站點
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: 日本當地天氣預報 ================= -->
+    <section id="tab-weather" class="tab-content hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="font-black text-[19px] text-slate-800 dark:text-slate-100">行程沿線即時氣溫 ＆ 預報</h2>
+          <p class="text-[14px] text-slate-500 dark:text-slate-400">來源：日本氣象高解析模式 (右側為當下即時)</p>
+        </div>
+        <button onclick="fetchWeatherData(true)" id="btn-weather-refresh" class="h-10 px-3.5 bg-red-700 active:bg-red-800 text-white rounded-xl shadow font-bold text-[15px] flex items-center space-x-1.5 transition">
+          <i class="fas fa-rotate" id="weather-icon-spin"></i>
+          <span>更新</span>
         </button>
       </div>
-    `;
 
-    container.appendChild(card);
-  });
+      <!-- 天氣清單卡片 -->
+      <div id="weather-list" class="space-y-3">
+        <!-- 動態渲染 -->
+      </div>
 
-  if (highlightItemId) {
-    const target = document.getElementById(highlightItemId);
-    if (target) {
+      <!-- 日本官方權威入口 -->
+      <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-3.5 rounded-2xl space-y-2">
+        <div class="font-bold text-[16px] text-slate-800 dark:text-slate-200">
+          <i class="fas fa-satellite mr-1"></i> 日本當地官方氣象直達：
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[15px] font-bold">
+          <a href="https://www.jma.go.jp/bosai/forecast/#area_type=class20&area_code=4013000" target="_blank" class="text-center bg-white dark:bg-slate-800 py-2.5 rounded-xl border border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 shadow-sm">
+            日本氣象廳 (福岡)
+          </a>
+          <a href="https://tenki.jp/forecast/9/43/8810/44207/" target="_blank" class="text-center bg-white dark:bg-slate-800 py-2.5 rounded-xl border border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 shadow-sm">
+            Tenki.jp (由布院)
+          </a>
+          <a href="https://weathernews.jp/onebox/33.59/130.40/" target="_blank" class="col-span-2 text-center bg-white dark:bg-slate-800 py-2.5 rounded-xl border border-emerald-400 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 shadow-sm">
+            Weathernews (九州即時雨雲雷達)
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: 即時匯率換算 ================= -->
+    <section id="tab-currency" class="tab-content hidden space-y-4">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2">
+          <div>
+            <span class="font-black text-[18px] text-slate-800 dark:text-slate-100">台幣 ⇄ 日圓 (即時匯率)</span>
+            <p class="text-[13px] text-slate-400" id="rate-update-time">連線抓取中...</p>
+          </div>
+          <button onclick="fetchRate(true)" id="btn-rate-refresh" class="h-9 px-3 bg-red-700 active:bg-red-800 text-white rounded-xl shadow text-[14px] font-bold flex items-center space-x-1">
+            <i class="fas fa-rotate" id="rate-icon-spin"></i>
+            <span>更新匯率</span>
+          </button>
+        </div>
+
+        <div class="flex justify-around items-center text-center py-1">
+          <div>
+            <span class="text-[14px] text-slate-400 font-bold">1 TWD 新台幣</span>
+            <div class="text-[21px] font-black text-slate-900 dark:text-amber-400 font-mono" id="rate-display">≈ 4.80 円</div>
+          </div>
+          <div class="text-slate-300 text-[20px] font-black">⇄</div>
+          <div>
+            <span class="text-[14px] text-slate-400 font-bold">1 JPY 日圓</span>
+            <div class="text-[21px] font-black text-slate-900 dark:text-amber-400 font-mono" id="inverse-rate-display">≈ 0.208 元</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-[14px] bg-slate-50 dark:bg-slate-800/70 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+          <label class="text-slate-600 dark:text-slate-300 font-bold">手動自訂匯率 (1 TWD = JPY)：</label>
+          <input type="number" step="0.01" id="custom-rate-input" class="w-24 px-2 py-1 border border-slate-300 dark:border-slate-600 rounded-lg text-right font-black text-[17px] bg-white dark:bg-slate-900" value="4.80" oninput="updateCustomRate(this.value)">
+        </div>
+      </div>
+
+      <!-- 換算輸入與大螢幕顯示 -->
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+        <div>
+          <label class="text-[14px] font-bold text-slate-500 dark:text-slate-400">日圓金額 (JPY ¥)</label>
+          <div class="relative mt-1">
+            <input type="text" readonly id="keypad-jpy-display" value="0" class="w-full text-right pr-4 pl-10 py-2.5 text-[22px] font-black font-mono border-2 border-red-500 rounded-2xl bg-red-50/50 dark:bg-red-950/30 text-red-900 dark:text-red-200 focus:outline-none">
+            <span class="absolute left-4 top-3 text-red-600 dark:text-red-400 font-black text-[20px]">¥</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[14px] font-bold text-slate-500 dark:text-slate-400">折合新台幣 (TWD NT$)</label>
+          <div class="relative mt-1">
+            <input type="text" readonly id="keypad-twd-display" value="0" class="w-full text-right pr-4 pl-12 py-2.5 text-[22px] font-black font-mono border-2 border-amber-500 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 text-amber-950 dark:text-amber-200 focus:outline-none">
+            <span class="absolute left-4 top-3 text-amber-700 dark:text-amber-400 font-black text-[18px]">NT$</span>
+          </div>
+        </div>
+
+        <!-- 專屬九宮格大按鍵 -->
+        <div class="pt-1">
+          <div class="grid grid-cols-4 gap-2 text-[20px] font-bold font-mono">
+            <button onclick="pressKey('7')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">7</button>
+            <button onclick="pressKey('8')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">8</button>
+            <button onclick="pressKey('9')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">9</button>
+            <button onclick="pressKey('DEL')" class="h-12 bg-rose-100 dark:bg-rose-950 active:bg-rose-200 text-rose-800 dark:text-rose-300 rounded-xl shadow-sm flex items-center justify-center text-[18px]"><i class="fas fa-delete-left"></i></button>
+
+            <button onclick="pressKey('4')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">4</button>
+            <button onclick="pressKey('5')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">5</button>
+            <button onclick="pressKey('6')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">6</button>
+            <button onclick="pressKey('CLR')" class="h-12 bg-amber-100 dark:bg-amber-950 active:bg-amber-200 text-amber-900 dark:text-amber-300 rounded-xl shadow-sm flex items-center justify-center text-[17px] font-black">C</button>
+
+            <button onclick="pressKey('1')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">1</button>
+            <button onclick="pressKey('2')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">2</button>
+            <button onclick="pressKey('3')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">3</button>
+            <button onclick="pressQuickAdd(100)" class="h-12 bg-slate-200 dark:bg-slate-700 active:bg-slate-300 text-slate-800 dark:text-white rounded-xl shadow-sm flex items-center justify-center text-[15px] font-black">+100</button>
+
+            <button onclick="pressKey('0')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">0</button>
+            <button onclick="pressKey('00')" class="h-12 bg-slate-100 dark:bg-slate-800 active:bg-slate-300 dark:active:bg-slate-700 rounded-xl shadow-sm text-slate-900 dark:text-white flex items-center justify-center">00</button>
+            <button onclick="pressQuickAdd(1000)" class="col-span-2 h-12 bg-red-700 active:bg-red-800 text-white rounded-xl shadow-md flex items-center justify-center text-[16px] font-black">+1,000 円</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 快速面額卡片 -->
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+        <h3 class="font-black text-[16px] text-slate-500 dark:text-slate-400">常用金額對照速查卡</h3>
+        <div class="grid grid-cols-2 gap-2 text-[17px]" id="quick-cards"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部固定導航選單 (強制保障 CSS，Safari 絕對可見) -->
+  <nav id="bottom-nav" class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-2.5 px-6">
+    <div class="max-w-md mx-auto grid grid-cols-3 gap-2 text-center">
+      <button onclick="switchTab('itinerary')" id="nav-itinerary" class="nav-item text-red-700 dark:text-red-400 flex flex-col items-center">
+        <i class="fas fa-route text-[22px]"></i>
+        <span class="text-[14px] mt-0.5 font-black">行程與泊車</span>
+      </button>
+      <button onclick="switchTab('weather')" id="nav-weather" class="nav-item text-slate-400 dark:text-slate-500 flex flex-col items-center">
+        <i class="fas fa-cloud-sun text-[22px]"></i>
+        <span class="text-[14px] mt-0.5 font-black">日本天氣</span>
+      </button>
+      <button onclick="switchTab('currency')" id="nav-currency" class="nav-item text-slate-400 dark:text-slate-500 flex flex-col items-center">
+        <i class="fas fa-calculator text-[22px]"></i>
+        <span class="text-[14px] mt-0.5 font-black">匯率算盤</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- JavaScript 核心功能 (已移除 Safari 不相容的 event.target) -->
+  <script>
+    function showToast(msg, icon = 'fa-rotate fa-spin', duration = 1200) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      const toastIcon = document.getElementById('toast-icon');
+      if (!toast) return;
+      toastMsg.innerText = msg;
+      toastIcon.className = 'fas ' + icon;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
       setTimeout(() => {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 200);
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, duration);
     }
-  }
-}
 
-function selectDay(dayIndex) {
-  renderDay(dayIndex);
-  const items = tripData[dayIndex].items;
-  updateHUDDashboard(dayIndex, items[0], items[1] || items[0], false);
-}
+    function initTheme() {
+      const savedTheme = localStorage.getItem('fukuoka_trip_theme');
+      const hour = new Date().getHours();
+      const isNightTime = (hour >= 18 || hour < 6);
 
-function autoRelocate() {
-  const auto = autoDetectDayAndHighlight();
-  const targetId = auto.activeItem ? auto.activeItem.id : (auto.nextItem ? auto.nextItem.id : 'd1-1');
-  
-  renderDay(auto.day, targetId);
-  updateHUDDashboard(auto.day, auto.activeItem, auto.nextItem, auto.isToday);
-  showToast(`已鎖定 Day ${auto.day} 行程`);
-}
-
-function requestGPS() {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        userGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        const auto = autoDetectDayAndHighlight();
-        updateHUDMetrics(auto.activeItem);
-        showToast("已取得目前 GPS 定位");
-      },
-      (err) => {
-        console.warn("GPS error:", err);
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  }
-}
-
-/* =========================================================
-   PULL TO REFRESH IMPLEMENTATION
-   ========================================================= */
-let startY = 0;
-let currentY = 0;
-let isPulling = false;
-const ptrIndicator = document.getElementById('ptr-indicator');
-const ptrText = document.getElementById('ptr-text');
-const ptrSpinner = document.getElementById('ptr-spinner');
-
-document.addEventListener('touchstart', (e) => {
-  if (window.scrollY <= 5) {
-    startY = e.touches[0].screenY;
-    isPulling = true;
-  }
-}, { passive: true });
-
-document.addEventListener('touchmove', (e) => {
-  if (!isPulling) return;
-  currentY = e.touches[0].screenY;
-  const distance = currentY - startY;
-
-  if (distance > 20 && window.scrollY <= 5) {
-    ptrIndicator.classList.add('visible');
-    if (distance > 70) {
-      ptrText.innerText = "⚡ 釋放立即重新定位";
-    } else {
-      ptrText.innerText = "👇 下拉以重新定位行程";
+      if (savedTheme === 'dark' || (!savedTheme && isNightTime)) {
+        applyDark(true);
+      } else {
+        applyDark(false);
+      }
     }
-  }
-}, { passive: true });
 
-document.addEventListener('touchend', () => {
-  if (!isPulling) return;
-  const distance = currentY - startY;
+    function applyDark(isDark) {
+      const html = document.documentElement;
+      const themeBtn = document.getElementById('theme-btn');
+      if (isDark) {
+        html.classList.add('dark');
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-sun text-amber-300"></i>';
+      } else {
+        html.classList.remove('dark');
+        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-moon text-yellow-300"></i>';
+      }
+    }
 
-  if (distance > 70 && window.scrollY <= 5) {
-    ptrText.innerText = "正在重新計算行程與氣象...";
-    ptrSpinner.style.display = "inline-block";
-    
-    setTimeout(() => {
-      autoRelocate();
-      requestGPS();
-      fetchLiveOpenMeteo();
-      ptrSpinner.style.display = "none";
-      ptrIndicator.classList.remove('visible');
-    }, 400);
-  } else {
-    ptrIndicator.classList.remove('visible');
-  }
-  isPulling = false;
-  startY = 0;
-  currentY = 0;
-});
+    function toggleDarkModeManual() {
+      const isCurrentlyDark = document.documentElement.classList.contains('dark');
+      applyDark(!isCurrentlyDark);
+      localStorage.setItem('fukuoka_trip_theme', !isCurrentlyDark ? 'dark' : 'light');
+      showToast(!isCurrentlyDark ? '切換夜間模式' : '切換日間高對比', 'fa-check', 1000);
+    }
 
-/* =========================================================
-   CENTERED COMPASS & DEVICE ORIENTATION LOGIC
-   ========================================================= */
-let isCompassActive = false;
-
-function handleOrientation(event) {
-  if (!isCompassActive) return;
-
-  let heading = null;
-  if (typeof event.webkitCompassHeading !== "undefined") {
-    heading = event.webkitCompassHeading;
-  } else if (event.absolute && event.alpha !== null) {
-    heading = 360 - event.alpha;
-  } else if (event.alpha !== null) {
-    heading = 360 - event.alpha;
-  }
-
-  if (heading !== null) {
-    heading = Math.round(heading);
-    if (heading < 0) heading += 360;
-    if (heading >= 360) heading -= 360;
-
-    const dirStr = degreesToDirection(heading);
-    document.getElementById('compass-text').innerText = `🧭 ${dirStr} ${heading}°`;
-    document.getElementById('compass-needle').style.transform = `rotate(${heading}deg)`;
-    document.getElementById('compass-subtext').innerText = "即時感測中 (轉動手機即時更新)";
-  }
-}
-
-function stopCompass(e) {
-  if (e) e.stopPropagation();
-  window.removeEventListener('deviceorientation', handleOrientation, true);
-  window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
-  isCompassActive = false;
-
-  const bar = document.getElementById('compass-utility-bar');
-  const text = document.getElementById('compass-text');
-  const subtext = document.getElementById('compass-subtext');
-  const needle = document.getElementById('compass-needle');
-  const stopBtn = document.getElementById('compass-stop-btn');
-
-  bar.classList.remove('active');
-  stopBtn.classList.remove('visible');
-  text.innerText = "🧭 坐向：已暫停";
-  subtext.innerText = "點擊以重新啟用指南針";
-  needle.style.transform = "rotate(0deg)";
-  showToast("已停止指南針顯示 (節省電力)");
-}
-
-function handleCompassClick(e) {
-  if (!isCompassActive) {
-    startCompass();
-  }
-}
-
-function startCompass() {
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission()
-      .then(response => {
-        if (response === 'granted') {
-          window.addEventListener('deviceorientation', handleOrientation, true);
-          activateCompassUI();
-          showToast("已取得 iPhone 指南針權限！");
-        } else {
-          showToast("已拒絕指南針權限 (可在 iOS 設定開啟)");
+    // Tab 切換 (完全安全純 DOM，支援 Safari)
+    function switchTab(tabId) {
+      const tabs = ['itinerary', 'weather', 'currency'];
+      tabs.forEach(id => {
+        const content = document.getElementById('tab-' + id);
+        const nav = document.getElementById('nav-' + id);
+        if (content) {
+          if (id === tabId) {
+            content.classList.remove('hidden');
+          } else {
+            content.classList.add('hidden');
+          }
         }
-      })
-      .catch(err => {
-        console.error(err);
-        showToast("無法啟用指南針: " + err.message);
+        if (nav) {
+          if (id === tabId) {
+            nav.classList.add('text-red-700', 'dark:text-red-400');
+            nav.classList.remove('text-slate-400', 'dark:text-slate-500');
+          } else {
+            nav.classList.remove('text-red-700', 'dark:text-red-400');
+            nav.classList.add('text-slate-400', 'dark:text-slate-500');
+          }
+        }
       });
-  } else if ('ondeviceorientationabsolute' in window) {
-    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-    activateCompassUI();
-    showToast("已啟動 Android 絕對方位指南針");
-  } else if ('ondeviceorientation' in window) {
-    window.addEventListener('deviceorientation', handleOrientation, true);
-    activateCompassUI();
-    showToast("已啟動指南針");
-  } else {
-    showToast("您的裝置或瀏覽器不支援陀螺儀/指南針 API");
-  }
-}
+      window.scrollTo(0, 0);
+    }
 
-function activateCompassUI() {
-  isCompassActive = true;
-  const bar = document.getElementById('compass-utility-bar');
-  const stopBtn = document.getElementById('compass-stop-btn');
-  bar.classList.add('active');
-  stopBtn.classList.add('visible');
-  document.getElementById('compass-subtext').innerText = "感測中，請轉動手機...";
-}
+    // 天數切換 (安全精確比對，解決 Safari 無法識別 event 的問題)
+    function filterDay(day) {
+      showToast(`載入 Day ${day}...`, 'fa-spinner fa-spin', 300);
 
-window.addEventListener('DOMContentLoaded', () => {
-  autoRelocate();
-  requestGPS();
-  fetchLiveOpenMeteo();
-  calculateTWD();
-});
-</script>
+      for (let i = 1; i <= 6; i++) {
+        const btn = document.getElementById(`day-btn-${i}`);
+        const card = document.getElementById(`day-card-${i}`);
+        
+        if (i === day) {
+          if (btn) {
+            btn.className = 'day-btn bg-red-700 text-white px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow';
+          }
+          if (card) {
+            card.classList.remove('hidden');
+          }
+        } else {
+          if (btn) {
+            btn.className = 'day-btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3.5 py-2 rounded-xl text-[16px] font-bold whitespace-nowrap shadow-sm';
+          }
+          if (card) {
+            card.classList.add('hidden');
+          }
+        }
+      }
+    }
+
+    // 匯率計算機邏輯
+    let currentRate = 4.80;
+    let currentJpyInput = "0";
+
+    function pressKey(key) {
+      if (key === 'CLR') {
+        currentJpyInput = "0";
+      } else if (key === 'DEL') {
+        if (currentJpyInput.length > 1) {
+          currentJpyInput = currentJpyInput.slice(0, -1);
+        } else {
+          currentJpyInput = "0";
+        }
+      } else if (key === '00') {
+        if (currentJpyInput !== "0") currentJpyInput += "00";
+      } else {
+        if (currentJpyInput === "0") {
+          currentJpyInput = key;
+        } else {
+          if (currentJpyInput.length < 9) currentJpyInput += key;
+        }
+      }
+      renderKeypadCalc();
+    }
+
+    function pressQuickAdd(val) {
+      let num = parseInt(currentJpyInput, 10) || 0;
+      num += val;
+      currentJpyInput = num.toString();
+      renderKeypadCalc();
+    }
+
+    function renderKeypadCalc() {
+      const num = parseInt(currentJpyInput, 10) || 0;
+      const jpyEl = document.getElementById('keypad-jpy-display');
+      const twdEl = document.getElementById('keypad-twd-display');
+      if (jpyEl) jpyEl.value = num.toLocaleString();
+      const twd = Math.round(num / currentRate);
+      if (twdEl) twdEl.value = twd.toLocaleString();
+    }
+
+    function updateQuickCards() {
+      const amounts = [800, 1000, 1200, 1500, 2500, 5000];
+      const container = document.getElementById('quick-cards');
+      if (!container) return;
+      container.innerHTML = '';
+      amounts.forEach(amt => {
+        const twd = Math.round(amt / currentRate);
+        const card = document.createElement('div');
+        card.className = "p-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl flex justify-between items-center";
+        card.innerHTML = `
+          <span class="font-black text-slate-800 dark:text-slate-100 text-[17px]">¥${amt.toLocaleString()}</span>
+          <span class="font-black text-red-600 dark:text-amber-400 text-[17px]">NT$ ${twd.toLocaleString()}</span>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function updateCustomRate(rate) {
+      currentRate = parseFloat(rate) || 4.80;
+      const rateDisp = document.getElementById('rate-display');
+      const invDisp = document.getElementById('inverse-rate-display');
+      if (rateDisp) rateDisp.innerText = `≈ ${currentRate.toFixed(2)} 円`;
+      if (invDisp) invDisp.innerText = `≈ ${(1 / currentRate).toFixed(3)} 元`;
+      updateQuickCards();
+      renderKeypadCalc();
+    }
+
+    async function fetchRate(isManual = false) {
+      const spinIcon = document.getElementById('rate-icon-spin');
+      if (isManual) {
+        if (spinIcon) spinIcon.classList.add('fa-spin');
+        showToast('連線抓取即時匯率...', 'fa-rotate fa-spin');
+      }
+
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/TWD');
+        const data = await res.json();
+        if (data && data.rates && data.rates.JPY) {
+          currentRate = parseFloat(data.rates.JPY.toFixed(2));
+          const inputEl = document.getElementById('custom-rate-input');
+          if (inputEl) inputEl.value = currentRate;
+          updateCustomRate(currentRate);
+          const nowStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+          const timeEl = document.getElementById('rate-update-time');
+          if (timeEl) timeEl.innerText = `已連線更新 (${nowStr} 即時牌告)`;
+          if (isManual) showToast('匯率已更新！', 'fa-check');
+        }
+      } catch (e) {
+        updateCustomRate(4.80);
+        const timeEl = document.getElementById('rate-update-time');
+        if (timeEl) timeEl.innerText = `使用快取匯率 (1:4.80)`;
+        if (isManual) showToast('使用快取匯率 (1:4.80)', 'fa-triangle-exclamation');
+      } finally {
+        if (spinIcon) spinIcon.classList.remove('fa-spin');
+      }
+    }
+
+    const travelLocations = [
+      { name: "福岡 (博多/天神/大濠)", lat: 33.5904, lon: 130.4017, tag: "D1, D5, D6" },
+      { name: "太宰府 / 竈門神社", lat: 33.5215, lon: 130.5349, tag: "D2 紅葉名所" },
+      { name: "由布院 (金鱗湖)", lat: 33.2642, lon: 131.3556, tag: "D2 溫泉鄉" },
+      { name: "別府 (鶴見岳/地獄)", lat: 33.2846, lon: 131.4912, tag: "D3 纜車" },
+      { name: "黑川溫泉 / 九重吊橋", lat: 33.1232, lon: 131.1408, tag: "D3 秘湯紅葉" },
+      { name: "深耶馬溪 (一目八景)", lat: 33.4542, lon: 131.0851, tag: "D4 溪谷" },
+      { name: "鳥棲 (Outlets)", lat: 33.3768, lon: 130.5186, tag: "D4 購物" }
+    ];
+
+    async function fetchWeatherData(isManual = false) {
+      const container = document.getElementById('weather-list');
+      const spinIcon = document.getElementById('weather-icon-spin');
+      if (isManual) {
+        if (spinIcon) spinIcon.classList.add('fa-spin');
+        showToast('更新日本最新氣象資訊...', 'fa-rotate fa-spin');
+      } else {
+        if (container) container.innerHTML = '<div class="text-center py-6 text-slate-400 font-bold text-[16px]"><i class="fas fa-spinner fa-spin mr-2"></i>連線抓取日本氣象中...</div>';
+      }
+
+      try {
+        const results = await Promise.all(travelLocations.map(async loc => {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo`;
+          const res = await fetch(url);
+          const data = await res.json();
+          return { ...loc, data };
+        }));
+
+        if (!container) return;
+        container.innerHTML = '';
+        results.forEach(item => {
+          const curTemp = Math.round(item.data.current.temperature_2m);
+          const maxTemp = Math.round(item.data.daily.temperature_2m_max[0]);
+          const minTemp = Math.round(item.data.daily.temperature_2m_min[0]);
+          const pop = item.data.daily.precipitation_probability_max[0] || 0;
+          const code = item.data.current.weather_code;
+          const weatherDesc = interpretWeatherCode(code);
+
+          const card = document.createElement('div');
+          card.className = "bg-white dark:bg-slate-900 p-3.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex justify-between items-center";
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <span class="font-black text-slate-900 dark:text-slate-100 text-[18px]">${item.name}</span>
+                <span class="text-[13px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold px-1.5 py-0.5 rounded-md">${item.tag}</span>
+              </div>
+              <div class="text-[16px] text-slate-600 dark:text-slate-300 mt-1 space-x-1">
+                <span>最高 <b class="text-red-600 dark:text-red-400 font-black text-[20px]">${maxTemp}°</b></span>
+                <span class="text-slate-400">/</span>
+                <span>最低 <b class="text-blue-600 dark:text-blue-400 font-black text-[20px]">${minTemp}°</b></span>
+                <span class="text-slate-400">｜</span>
+                <span>降雨率 <b class="${pop >= 40 ? 'text-rose-600 dark:text-rose-400 font-black' : 'font-bold'} text-[18px]">${pop}%</b></span>
+              </div>
+            </div>
+            <div class="text-right pl-2">
+              <div class="text-[13px] text-slate-400 font-bold">當前即時</div>
+              <div class="text-[22px] font-black text-slate-900 dark:text-white font-mono">${curTemp}°C</div>
+              <div class="text-[15px] text-amber-700 dark:text-amber-400 font-black">${weatherDesc}</div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        if (isManual) showToast('氣象資訊已更新！', 'fa-check');
+      } catch (err) {
+        if (container) container.innerHTML = '<div class="text-[16px] text-red-600 p-3 bg-red-50 dark:bg-red-950/60 rounded-xl font-bold">未能連線，請點擊下方日本氣象廳直達連結。</div>';
+      } finally {
+        if (spinIcon) spinIcon.classList.remove('fa-spin');
+      }
+    }
+
+    function interpretWeatherCode(code) {
+      if (code === 0) return "☀️ 晴朗";
+      if ([1, 2, 3].includes(code)) return "⛅ 多雲";
+      if ([45, 48].includes(code)) return "🌫️ 晨霧";
+      if ([51, 53, 55, 61, 63, 65].includes(code)) return "🌧️ 降雨";
+      if ([80, 81, 82].includes(code)) return "🌦️ 短暫陣雨";
+      return "☁️ 陰天";
+    }
+
+    // 初始化啟動
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      fetchRate(false);
+      fetchWeatherData(false);
+      renderKeypadCalc();
+    });
+  </script>
 </body>
 </html>
